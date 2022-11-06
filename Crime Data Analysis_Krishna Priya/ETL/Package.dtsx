@@ -1,0 +1,290 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="10/31/2022 2:38:06 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="EYDANLT15"
+  DTS:CreatorName="IIHT\eydanlt10"
+  DTS:DTSID="{67ED361D-370F-49D2-A849-9F9AE40FFC87}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.845.0"
+  DTS:LocaleID="16393"
+  DTS:ObjectName="Package"
+  DTS:PackageType="5"
+  DTS:VersionBuild="4"
+  DTS:VersionGUID="{D95E92D4-A35E-47AA-9598-6AD8C348E430}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[eydanlt15.SourceDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{3C7A27B9-5862-40AB-AF1B-164AD23444BB}"
+      DTS:ObjectName="eydanlt15.SourceDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=eydanlt15;Initial Catalog=SourceDB;Provider=SQLNCLI11.1;Integrated Security=SSPI;Application Name=SSIS-Package-{3C7A27B9-5862-40AB-AF1B-164AD23444BB}eydanlt15.SourceDB;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[eydanlt15.TargetDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{48F5DC47-DF8F-4573-B924-BC5E8248573B}"
+      DTS:ObjectName="eydanlt15.TargetDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=eydanlt15;Initial Catalog=TargetDB;Provider=SQLNCLI11.1;Integrated Security=SSPI;Application Name=SSIS-Package-{48F5DC47-DF8F-4573-B924-BC5E8248573B}eydanlt15.TargetDB;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Sequence Container"
+      DTS:CreationName="STOCK:SEQUENCE"
+      DTS:Description="Sequence Container"
+      DTS:DTSID="{4F017BD2-3307-4F93-BE80-46058228FD80}"
+      DTS:ExecutableType="STOCK:SEQUENCE"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Sequence Container">
+      <DTS:Variables />
+      <DTS:Executables>
+        <DTS:Executable
+          DTS:refId="Package\Sequence Container\Insert Into Dim District"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{B178FE41-4B25-4103-9B21-4D60CECA6057}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="Insert Into Dim District"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{48F5DC47-DF8F-4573-B924-BC5E8248573B}"
+              SQLTask:SqlStatementSource="insert into DIM_DISTRICT(District_Name,State_Id,District_Id) &#xA;select district ,State_Id,DENSE_RANK() over(Order By District,State_ut) As District_Id from [dbo].[Crime_Source]&#xA;join [DIM_STATE] on [dbo].[Crime_Source].[STATE_UT]= [dbo].[DIM_STATE].[State_Name]&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\Sequence Container\Insert Into Dim State"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{8D32D792-1691-4715-9E2B-B20D77404C2A}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="Insert Into Dim State"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{48F5DC47-DF8F-4573-B924-BC5E8248573B}"
+              SQLTask:SqlStatementSource="insert into DIM_STATE(State_Name) &#xA;select Distinct(STATE_UT) from [dbo].[Crime_Source]&#xA;&#xA;delete from DIM_STATE&#xA;where State_Id = 11" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\Sequence Container\Insert Into Fact District"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{0DB287B5-ABFB-4995-8955-9D61D373856C}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="Insert Into Fact District"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{48F5DC47-DF8F-4573-B924-BC5E8248573B}"
+              SQLTask:SqlStatementSource="insert into FACT_CRIME_DISTRICT&#xA;select s1.state_id,s1.District_Id,s2.year,s2.[Murder],s2.[Assault_on_women], s2.[Kidnapping_and_Abduction],&#xA;s2.[Dacoity],s2.[Robbery],s2.[Arson],s2.[Hurt],s2.[Prevention_of_atrocities_POA_Act],&#xA;s2.[Protection_of_Civil_Rights_PCR_Act], s2.[Other_Crimes_Against_SCs]&#xA;from DIM_DISTRICT as s1 inner join [dbo].[Crime_Source] as s2 on s1.District_Name = s2.DISTRICT&#xA;group by District_Id,State_Id,Year,Murder,Assault_on_women,Kidnapping_and_Abduction,Dacoity,Robbery,Arson,&#xA;Hurt,Prevention_of_atrocities_POA_Act,Protection_of_Civil_Rights_PCR_Act,Other_Crimes_Against_SCs " xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\Sequence Container\Insert Into Fact State"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{2F3EBE90-2857-4565-989F-93866B78A0F6}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="Insert Into Fact State"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{48F5DC47-DF8F-4573-B924-BC5E8248573B}"
+              SQLTask:SqlStatementSource="insert into FACT_CRIME_STATE&#xA;select s1.state_id,s2.year,sum(s2.[Murder]),sum(s2.[Assault_on_women]),sum(s2.[Kidnapping_and_Abduction]),&#xA;sum(s2.[Dacoity]),sum(s2.[Robbery]),sum(s2.[Arson]),sum(s2.[Hurt]),sum(s2.[Prevention_of_atrocities_POA_Act]),&#xA;sum(s2.[Protection_of_Civil_Rights_PCR_Act]),sum(s2.[Other_Crimes_Against_SCs]) &#xA;from DIM_STATE as s1 inner join [dbo].[Crime_Source] as s2 on s1.State_Name = s2.State_Ut &#xA;group by s1.State_Id,s2.year" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+      </DTS:Executables>
+      <DTS:PrecedenceConstraints>
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\Sequence Container.PrecedenceConstraints[Constraint]"
+          DTS:CreationName=""
+          DTS:DTSID="{904E2D54-BB4E-4944-8D60-67FCA2F13E64}"
+          DTS:From="Package\Sequence Container\Insert Into Dim State"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint"
+          DTS:To="Package\Sequence Container\Insert Into Dim District" />
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\Sequence Container.PrecedenceConstraints[Constraint 1]"
+          DTS:CreationName=""
+          DTS:DTSID="{01245CE8-FFA5-4B79-9663-368A1BE5A30B}"
+          DTS:From="Package\Sequence Container\Insert Into Dim District"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint 1"
+          DTS:To="Package\Sequence Container\Insert Into Fact State" />
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\Sequence Container.PrecedenceConstraints[Constraint 2]"
+          DTS:CreationName=""
+          DTS:DTSID="{30836803-D32E-431C-B4FF-E0FD089DF7CB}"
+          DTS:From="Package\Sequence Container\Insert Into Fact State"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint 2"
+          DTS:To="Package\Sequence Container\Insert Into Fact District" />
+      </DTS:PrecedenceConstraints>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="179,42"
+          Id="Package\Sequence Container\Insert Into Dim State"
+          TopLeft="49,7" />
+        <NodeLayout
+          Size="187,42"
+          Id="Package\Sequence Container\Insert Into Dim District"
+          TopLeft="137,85" />
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Sequence Container\Insert Into Fact State"
+          TopLeft="186,161" />
+        <NodeLayout
+          Size="188,42"
+          Id="Package\Sequence Container\Insert Into Fact District"
+          TopLeft="259,249" />
+        <EdgeLayout
+          Id="Package\Sequence Container.PrecedenceConstraints[Constraint]"
+          TopLeft="138.5,49">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="92,36"
+              Start="0,0"
+              End="92,28.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,14" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,14"
+                    Point2="0,18"
+                    Point3="4,18" />
+                  <mssgle:LineSegment
+                    End="88,18" />
+                  <mssgle:CubicBezierSegment
+                    Point1="88,18"
+                    Point2="92,18"
+                    Point3="92,22" />
+                  <mssgle:LineSegment
+                    End="92,28.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Sequence Container.PrecedenceConstraints[Constraint 1]"
+          TopLeft="230.5,127">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="45.5,34"
+              Start="0,0"
+              End="45.5,26.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,13" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,13"
+                    Point2="0,17"
+                    Point3="4,17" />
+                  <mssgle:LineSegment
+                    End="41.5,17" />
+                  <mssgle:CubicBezierSegment
+                    Point1="41.5,17"
+                    Point2="45.5,17"
+                    Point3="45.5,21" />
+                  <mssgle:LineSegment
+                    End="45.5,26.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Sequence Container.PrecedenceConstraints[Constraint 2]"
+          TopLeft="276,203">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="77,46"
+              Start="0,0"
+              End="77,38.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,19" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,19"
+                    Point2="0,23"
+                    Point3="4,23" />
+                  <mssgle:LineSegment
+                    End="73,23" />
+                  <mssgle:CubicBezierSegment
+                    Point1="73,23"
+                    Point2="77,23"
+                    Point3="77,27" />
+                  <mssgle:LineSegment
+                    End="77,38.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <ContainerLayout
+          HeaderHeight="43"
+          IsExpanded="True"
+          PanelSize="452,346"
+          Size="452,389"
+          Id="Package\Sequence Container"
+          TopLeft="202,45" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
